@@ -30,7 +30,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration;
+import com.datastax.oss.driver.api.core.CqlSession;
 import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.data.elasticsearch.client.RestClients;
+import org.elasticsearch.client.RestClientBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -43,6 +50,8 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import javax.sql.DataSource;
 import java.util.List;
+
+import java.time.Duration;
 
 @Configuration
 public class DatasourceConfig {
@@ -88,8 +97,8 @@ public class DatasourceConfig {
     static class CassandraConfiguration {
 
         @Bean
-        public DataStore dataStore(CassandraTemplate cassandraTemplate) {
-            return new CassandraStore(cassandraTemplate);
+        public DataStore dataStore(CqlSession cqlSession) {
+            return new CassandraStore(new CassandraTemplate(cqlSession));
         }
     }
 
@@ -152,10 +161,30 @@ public class DatasourceConfig {
         public MetadataStore metadataStore(SolrOperations solrTemplate) {
             SolrStore solrStore = new SolrStore(solrTemplate);
             solrStore.setCollection(datasourceProperties.getSolrStore().getCollection());
-            solrStore.setCommitWithin(datasourceProperties.getSolrStore().getCommitWithin());
+            solrStore.setCommitWithin(Duration.ofMillis(datasourceProperties.getSolrStore().getCommitWithin()));
             solrStore.setGeoPrecision(datasourceProperties.getSolrStore().getGeoPrecision());
 
             return solrStore;
         }
+    }
+    @Configuration
+    @Profile("elasticsearch")
+    static class ElasticsearchConfiguration {
+
+            @Autowired
+            private DatasourceProperties datasourceProperties;
+
+            @Autowired
+            private RestClientBuilder restClientBuilder;
+
+            @Bean
+            public MetadataStore metadataStore(RestClientBuilder restClientBuilder) {
+
+                RestHighLevelClient highLevelClient = new RestHighLevelClient(restClientBuilder);
+                ElasticsearchStore elasticsearchStore = new ElasticsearchStore(highLevelClient);
+                elasticsearchStore.setIndex(datasourceProperties.getElasticsearchStore().getIndex());
+
+                return elasticsearchStore;
+            }
     }
 }

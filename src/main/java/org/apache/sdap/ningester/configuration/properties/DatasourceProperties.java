@@ -22,6 +22,7 @@ import org.apache.sdap.ningester.writer.properties.CassandraStore;
 import org.apache.sdap.ningester.writer.properties.DynamoStore;
 import org.apache.sdap.ningester.writer.properties.S3Store;
 import org.apache.sdap.ningester.writer.properties.SolrStore;
+import org.apache.sdap.ningester.writer.properties.ElasticsearchStore;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,9 @@ public class DatasourceProperties {
     @NestedConfigurationProperty
     private final SolrStore solrStore = new SolrStore();
 
+    @NestedConfigurationProperty
+    private final ElasticsearchStore elasticsearchStore = new ElasticsearchStore();
+
     public DynamoStore getDynamoStore() {
         return dynamoStore;
     }
@@ -56,5 +60,9 @@ public class DatasourceProperties {
 
     public CassandraStore getCassandraStore() {
         return cassandraStore;
+    }
+
+    public ElasticsearchStore getElasticsearchStore() {
+        return elasticsearchStore;
     }
 }
