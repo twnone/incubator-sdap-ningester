@@ -32,6 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import java.time.Duration;
+
 public class SolrStore implements MetadataStore {
 
     //TODO This will be refactored at some point to be dynamic per-message. Or maybe per-group.
@@ -42,7 +44,7 @@ public class SolrStore implements MetadataStore {
         iso.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
-    private Integer commitWithin = 1000;
+    private Duration commitWithin = Duration.ofMillis(1000);
     private Integer geoPrecision = 3;
     private String collection = "nexustiles";
     private SolrOperations solr;
@@ -67,7 +69,7 @@ public class SolrStore implements MetadataStore {
         List<String> tileIds = nexusTiles.stream()
                 .map(nexusTile -> nexusTile.getSummary().getDatasetName() + "!" + nexusTile.getSummary().getTileId())
                 .collect(Collectors.toList());
-        solr.deleteById(this.collection, tileIds);
+        solr.deleteByIds(this.collection, tileIds);
     }
 
     public SolrInputDocument getSolrDocFromTileSummary(TileSummary summary) {
@@ -158,7 +160,7 @@ public class SolrStore implements MetadataStore {
 
         solrDoc.putAll(doc.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> {
             SolrInputField field = new SolrInputField(entry.getKey());
-            field.setValue(entry.getValue(), 0);
+            field.setValue(entry.getValue());
             return field;
         })));
 
@@ -169,7 +171,7 @@ public class SolrStore implements MetadataStore {
         this.collection = collection;
     }
 
-    public void setCommitWithin(Integer commitWithin) {
+    public void setCommitWithin(Duration commitWithin) {
         this.commitWithin = commitWithin;
     }
 
