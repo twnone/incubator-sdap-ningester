@@ -21,18 +21,20 @@ buildscript {
 	}
 	dependencies {
 		classpath 'io.spring.gradle:propdeps-plugin:0.0.10.RELEASE'
+		classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.BUILD-SNAPSHOT'
 	}
 }
 
 plugins {
 	id 'java'
 	id 'idea'
-	id 'org.springframework.boot' version '1.5.9.RELEASE'
-	id 'org.unbroken-dome.test-sets' version '1.4.2'
-	id 'net.researchgate.release' version '2.6.0'
+	id 'org.springframework.boot' version '2.4.0'
+	id 'org.unbroken-dome.test-sets' version '3.0.1'
+	id 'net.researchgate.release' version '2.8.1'
 }
 
 apply plugin: 'propdeps'
+apply plugin: "io.spring.dependency-management"
 
 configurations.compile.transitive = false
 configurations.provided.transitive = false
@@ -61,13 +63,16 @@ testSets {
 	testJobs
 }
 
-dependencyManagement {
-	imports {
-		mavenBom 'com.amazonaws:aws-java-sdk-bom:1.10.77+'
-	}
-}
 
 dependencies {
+        compile("org.springframework.data:spring-data-elasticsearch:4.1.1")
+
+        compile("org.elasticsearch.client:elasticsearch-rest-client:7.9.3")
+        compile("org.elasticsearch.client:elasticsearch-rest-high-level-client:7.9.3")
+        compile("org.elasticsearch.client:transport:7.9.3")
+        compile("org.elasticsearch:elasticsearch:7.9.3")
+        compile("org.elasticsearch.plugin:transport-netty4-client:7.9.3")
+
 	provided("org.springframework:spring-core:4.0.2.RELEASE")
 	optional("org.springframework:spring-context:4.0.2.RELEASE")
 
@@ -75,8 +80,12 @@ dependencies {
 
 	compile("org.springframework.boot:spring-boot-starter-batch")
 	compile("org.springframework:spring-web")
-	compile("org.springframework.data:spring-data-cassandra")
-	compile("org.springframework.data:spring-data-solr")
+
+	compile("org.springframework.data:spring-data-cassandra:3.0.5.RELEASE")
+	compile("com.datastax.oss:java-driver-core:4.9.0")
+	compile("com.datastax.oss:native-protocol:1.4.11")
+
+	compile("org.springframework.data:spring-data-solr:4.2.5.RELEASE")
 	compile("org.json:json:20190722")
 
 	compile("com.h2database:h2")
@@ -88,7 +97,7 @@ dependencies {
 	compile("com.google.guava:guava")
 
 	compile("com.amazonaws:aws-java-sdk-s3")
-	compile("com.amazonaws:aws-java-sdk-dynamodb")
+	compile("com.amazonaws:aws-java-sdk-dynamodb:1.11.904")
 
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('org.springframework.batch:spring-batch-test')
